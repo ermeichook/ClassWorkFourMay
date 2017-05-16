@@ -1,12 +1,19 @@
 package com.example.jek.classworkfourmay;
 
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+
 
 import com.example.jek.classworkfourmay.model.Article;
 
@@ -26,78 +33,50 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     public static final String TAG = MainActivity.class.getSimpleName();
     private User user = null;
     private FrameLayout f1;
     private TextView textView;
     private View container;
     private List<Article> articleList = new ArrayList<>();
+    private Spinner spinner;
+    private List<String> list = new ArrayList<>();
+    String urlBegin = "https://newsapi.org/v1/articles?source=";
+    String source = "the-next-web";
+    String urlEnd = "&sortBy=top&apiKey=12414510e7604ffa99dcd5c6fa256a92";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        f1 = (FrameLayout) findViewById(R.id.progress_bar);
+        spinner = (Spinner) findViewById(R.id.spinner);
+        ArrayAdapter arrayAdapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item);
+        list.add("abc-news-au");
+        list.add("ars-technica");
+        list.add("bbc-news");
+        list.add("bild");
+        list.add("al-jazeera-english");
+        arrayAdapter.addAll(list);
+        spinner.setAdapter(arrayAdapter);
         textView = (TextView) findViewById(R.id.myText);
+        spinner.setOnItemSelectedListener(this);
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getArticles();
+            }
+        });
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        /*MyAsyncTask myAsyncTask = new MyAsyncTask("Hello", this);
-        myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, 1);*/
 
-       /* try {
-            MyAsyncTask myAsyncTask = new MyAsyncTask("Hello", this);
-            myAsyncTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, 1);
-            user = myAsyncTask.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }*/
-        /*Log.d(*//*TAG*//* "Fsdsda", "resume " + Thread.currentThread().getName());*/
-        hideProgressBar();
-        OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
-        Request.Builder builder = new Request.Builder();
-        builder.url("https://newsapi.org/v1/articles?source=the-next-web&sortBy=latest&apiKey=219f6cc7fb864a3499614b11664ca40a");
-        Request request = builder.build();
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d(TAG, "call: " + call.toString() + "error: " + e.getMessage());
-            }
+//        hideProgressBar();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-               /* Log.d(TAG, "code: " + response.code());
-                Log.d(TAG, "response: " + response.body().string());*/
-                try {
-                    JSONObject jsonObject = new JSONObject(response.body().string());
-                    Log.d(TAG, "source: " + jsonObject.get("source"));
-                    JSONArray articles = jsonObject.getJSONArray("articles");
-                    for(int i = 0; i < articles.length(); i++){
-                        JSONObject jsonObject1 = new JSONObject(articles.get(i).toString());
-                        Article article = new Article();
-                        article.setAuthor(jsonObject1.get("author").toString());
-                        article.setDescription(jsonObject1.get("description").toString());
-                        article.setTitle(jsonObject1.get("title").toString());
-                        articleList.add(article);
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setArticles();
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
 
 
@@ -120,6 +99,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        source = list.get(position);
+        Log.d("sdcs", "source: " + source);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
     public static class User {
         String name;
         int age;
@@ -137,5 +127,45 @@ public class MainActivity extends AppCompatActivity {
             stringBuilder.append("\n");
         }
         textView.setText(stringBuilder.toString());
+    }
+    private void getArticles(){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+        Request.Builder builder = new Request.Builder();
+        builder.url(urlBegin + source + urlEnd);
+        Request request = builder.build();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, "call: " + call.toString() + "error: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+//                Log.d(TAG, "code: " + response.code());
+//                Log.d(TAG, "response: " + response.body().string());
+                articleList.clear();
+                try {
+                    JSONObject jsonObject = new JSONObject(response.body().string());
+                    //  Log.d(TAG, "source: " + jsonObject.get("source"));
+                    JSONArray articles = jsonObject.getJSONArray("articles");
+                    for(int i = 0; i < articles.length(); i++){
+                        JSONObject jsonObject1 = new JSONObject(articles.get(i).toString());
+                        Article article = new Article();
+                        article.setAuthor(jsonObject1.get("author").toString());
+                        article.setDescription(jsonObject1.get("description").toString());
+                        article.setTitle(jsonObject1.get("title").toString());
+                        articleList.add(article);
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setArticles();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }
