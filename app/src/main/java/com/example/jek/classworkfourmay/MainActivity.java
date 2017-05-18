@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,11 +38,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public static final String TAG = MainActivity.class.getSimpleName();
     private User user = null;
     private FrameLayout f1;
-    private TextView textView;
     private View container;
     private List<Article> articleList = new ArrayList<>();
     private Spinner spinner;
     private List<String> list = new ArrayList<>();
+    private RecyclerView recyclerView;
     String urlBegin = "https://newsapi.org/v1/articles?source=";
     String source = "the-next-web";
     String urlEnd = "&sortBy=top&apiKey=12414510e7604ffa99dcd5c6fa256a92";
@@ -60,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         list.add("al-jazeera-english");
         arrayAdapter.addAll(list);
         spinner.setAdapter(arrayAdapter);
-        textView = (TextView) findViewById(R.id.myText);
         spinner.setOnItemSelectedListener(this);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler);
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,20 +89,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         f1.setVisibility(View.GONE);
     }
 
-    public void onUserRecieved(final User user) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                String current = textView.getText().toString();
-                current = current + "\n" + "User name: " + user.name + "User age: " + user.age;
-                textView.setText(current);
-            }
-        });
-    }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        source = list.get(position);
+         source = list.get(position);
         Log.d("sdcs", "source: " + source);
     }
 
@@ -126,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             stringBuilder.append(article.toString());
             stringBuilder.append("\n");
         }
-        textView.setText(stringBuilder.toString());
+
     }
     private void getArticles(){
         OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
@@ -143,10 +134,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onResponse(Call call, Response response) throws IOException {
 //                Log.d(TAG, "code: " + response.code());
 //                Log.d(TAG, "response: " + response.body().string());
-                articleList.clear();
+               articleList.clear();
                 try {
                     JSONObject jsonObject = new JSONObject(response.body().string());
-                    //  Log.d(TAG, "source: " + jsonObject.get("source"));
+                  //  Log.d(TAG, "source: " + jsonObject.get("source"));
                     JSONArray articles = jsonObject.getJSONArray("articles");
                     for(int i = 0; i < articles.length(); i++){
                         JSONObject jsonObject1 = new JSONObject(articles.get(i).toString());
