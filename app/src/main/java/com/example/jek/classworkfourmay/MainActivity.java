@@ -23,8 +23,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -112,11 +115,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void setArticles(){
-        StringBuilder stringBuilder = new StringBuilder(articleList.size()*2);
-        for(Article article: articleList){
-            stringBuilder.append(article.toString());
-            stringBuilder.append("\n");
-        }
+       // StringBuilder stringBuilder = new StringBuilder(articleList.size()*2);
+       // for(Article article: articleList){
+       //     stringBuilder.append(article.toString());
+        //    stringBuilder.append("\n");
+       // }
+        RecViewAdapter recViewAdapter = new RecViewAdapter(articleList);
+        recyclerView.setAdapter(recViewAdapter);
 
     }
     private void getArticles(){
@@ -145,6 +150,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         article.setAuthor(jsonObject1.get("author").toString());
                         article.setDescription(jsonObject1.get("description").toString());
                         article.setTitle(jsonObject1.get("title").toString());
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd 'T' HH:mm", Locale.getDefault());
+
+
+                        article.setPublishedAt(jsonObject1.get("publishedAt").toString());
                         articleList.add(article);
                     }
                     runOnUiThread(new Runnable() {

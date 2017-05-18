@@ -23,6 +23,7 @@
         android:layout_centerHorizontal="true"
         android:text="button" />
     <android.support.v7.widget.RecyclerView
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
         android:id="@+id/recycler"
         android:layout_below="@id/spinner"
         android:layout_width="match_parent"
